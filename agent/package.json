@@ -1,0 +1,14 @@
+{
+  "name": "onebox-worker-door-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agen tunnel pintu Worker Onebox: WebSocket keluar ke Cloudflare Worker, meneruskan HTTP ke dashboard lokal.",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "https-proxy-agent": "^7.0.6",
+    "ws": "^8.18.3"
+  }
+}

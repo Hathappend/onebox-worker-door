@@ -1,0 +1,15 @@
+[Unit]
+Description=Agen tunnel pintu Worker Onebox
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/hatch/workspace/projects/onebox-worker-door/agent
+ExecStart=/usr/bin/env node agent.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=default.target

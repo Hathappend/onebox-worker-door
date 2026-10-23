@@ -1,0 +1,20 @@
+# Konfigurasi Wrangler untuk pintu Worker Onebox.
+# Dipakai bila deploy lewat wrangler; deploy lewat editor web juga bisa
+# (tempel isi worker.js, lalu tambahkan binding dan secret secara manual
+# mengikuti README di folder induk).
+
+name = "onebox-door"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+
+[[durable_objects.bindings]]
+name = "HUB"
+class_name = "TunnelHub"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TunnelHub"]
+
+# Secret TUNNEL_TOKEN jangan ditulis di sini. Pasang lewat:
+#   wrangler secret put TUNNEL_TOKEN
+# atau lewat dashboard Cloudflare (Settings > Variables and Secrets).
