@@ -1,15 +1,19 @@
 [Unit]
 Description=Agen tunnel pintu Worker Onebox
-After=network-online.target
+After=network-online.target onebox-dashboard.service
 Wants=network-online.target
 
 [Service]
 Type=simple
 WorkingDirectory=/home/hatch/workspace/projects/onebox-worker-door/agent
-ExecStart=/usr/bin/env node agent.js
+ExecStart=/usr/bin/node agent.js
 Restart=always
 RestartSec=5
+# Berisi TUNNEL_URL + variabel proxy egress; dibuat lokal (chmod 600),
+# tidak masuk git. Salinan terpasang hidup di /etc/systemd/system dan
+# dipulihkan oleh ~/workspace/ops/install-onebox-services.sh.
+EnvironmentFile=/home/hatch/.config/onebox/agent.env
 Environment=NODE_ENV=production
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
