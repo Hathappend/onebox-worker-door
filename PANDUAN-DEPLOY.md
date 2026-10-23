@@ -70,6 +70,10 @@ domain ini belum dipakai layanan lain, jadi tidak ada yang terganggu.
    - Route: `onebox.ai.id/*`
    - Worker: `onebox-door`
    - Save.
+   - ⚠ Tulis polanya persis seperti di atas, TANPA `*.` di depan.
+     Pola `*.onebox.ai.id/*` hanya mencakup subdomain, bukan domain
+     utamanya — gejalanya error 522 padahal semua terlihat benar
+     (kejadian sungguhan 23 Okt 2026; rincian di DOKUMENTASI.md §4).
 
 ## Tahap 5 — Kabari Muse
 
