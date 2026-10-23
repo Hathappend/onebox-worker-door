@@ -112,8 +112,22 @@ Keduanya layanan sistem, `enabled`, `Restart=always`:
   `TUNNEL_URL=wss://onebox-door.hathappend.workers.dev/__tunnel` —
   sengaja lewat alamat workers.dev supaya hidup-matinya tunnel tidak
   tergantung DNS domain; di dalam Worker, sambungannya sama saja.
+- **Struktur bengkel → production (sejak 23 Okt 2026, keputusan
+  pemilik):** layanan agen berjalan dari folder production
+  `~/workspace/production/onebox-worker-door/agent` — BUKAN dari repo
+  bengkel — supaya suntingan lokal tidak pernah ikut terbawa saat
+  layanan restart. Deploy adalah langkah sadar:
+  `bash ~/workspace/ops/deploy-onebox-agent.sh` menyalin `agent/` dari
+  bengkel (versi sebelumnya disimpan sebagai `agent.prev` untuk
+  rollback), mencatat commit terpasang di
+  `~/workspace/production/onebox-worker-door/VERSION`, lalu me-restart
+  layanan. Rollback: salin `agent.prev` kembali ke `agent`, restart.
+  Berkas `config.json` production ikut tersalin dari bengkel pada
+  setiap deploy — bengkel adalah sumber kebenaran tunggal.
 - Pemasangan ulang (idempoten):
   `bash ~/workspace/ops/install-onebox-services.sh`
+  (pemasang juga mengisi folder production dari bengkel bila folder
+  itu hilang, mis. restore sebagian pasca-ganti VM)
 - Pemulihan pasca-ganti VM: `~/workspace/ops/recover.sh` bagian 5
   memanggil pemasang itu, jadi kedua layanan ikut dipulihkan otomatis
   oleh sistem pemulihan yang sudah ada (dengan laporan ke pemilik).
@@ -175,4 +189,70 @@ ini hidup:
 | Halaman sesekali gagal lalu normal setelah muat ulang | Durable Object terusir saat menganggur (free plan) | Normal untuk pintu sementara; muat ulang |
 | `wrangler deploy` error "static files" | Perintah dijalankan di folder yang tidak berisi `wrangler.toml` | `cd` ke folder berisi `worker.js` + `wrangler.toml`, ulangi |
 | Setelah VM diganti pintu mati | Layanan belum terp
-...[truncated 3083 chars]
+...[truncated 3083 chars]asang ulang | Jalankan `recover.sh` / pemasang layanan; cek `systemctl status` |
+| Tunnel tersambung tapi halaman kosong/error | Dashboard lokal bermasalah | Cek `http://127.0.0.1:8787/api/health` dari VM |
+
+## 9. Mengganti token tunnel
+
+Token adalah rahasia bersama agen ↔ Worker. Ganti bila dicurigai bocor:
+
+1. Buat nilai acak baru di VM (mis. `openssl rand -hex 32`) — jangan
+   lewat chat.
+2. Tulis nilai baru ke `token` di `agent/config.json` **di bengkel**
+   (sumber kebenaran), jangan langsung di folder production.
+3. `npx wrangler secret put TUNNEL_TOKEN` dari laptop, tempel nilai
+   yang sama. Sejak langkah ini agen lama ditolak Worker — tunnel
+   berhenti sebentar, itu wajar.
+4. `bash ~/workspace/ops/deploy-onebox-agent.sh` (menyalin config baru
+   ke production + restart layanan), lalu cek `__health` harus kembali
+   `true`.
+
+## 10. Memensiunkan pintu ini
+
+Dilakukan hanya setelah pintu final (frp + VPS, T8) terbukti melayani
+`onebox.ai.id`:
+
+1. Alihkan route/domain ke pintu final lebih dulu (jangan matikan
+   pintu lama sebelum penggantinya terbukti — hindari jeda tanpa
+   pintu).
+2. `systemctl disable --now onebox-agent` di VM.
+3. Hapus Workers Route `onebox.ai.id/*` dan, bila mau bersih total,
+   hapus Worker `onebox-door` dari panel Cloudflare
+   (Workers & Pages → onebox-door → Settings → Delete).
+4. Repo ini tetap disimpan sebagai arsip + bahan evaluasi; jangan
+   hapus `agent/config.json` sampai Worker benar-benar terhapus.
+
+## 11. Riwayat singkat
+
+- **23 Okt 2026 sore** — dibangun dan diuji ujung-ke-ujung secara lokal
+  dengan hub tiruan (login + TOTP lolos, aset identik byte).
+- **23 Okt ±19:05** — pemilik men-deploy Worker sendiri via wrangler
+  dari laptopnya; secret terpasang.
+- **±19:24** — agen + dashboard dinyalakan; satu runtime restart
+  membunuh kedua proses (dipulihkan dengan menyalakan ulang; agen
+  sempat tertahan kartu izin satu putaran).
+- **±19:35** — keduanya dijadikan layanan systemd persisten atas
+  persetujuan pemilik; uji restart paksa lulus.
+- **±19:40** — domain utama 522: pola route pertama pemilik adalah
+  wildcard subdomain `*.onebox.ai.id/*` yang tidak mencakup apex;
+  terdiagnosis dari tangkapan layarnya.
+- **±19:47** — pola dikoreksi menjadi `onebox.ai.id/*`; domain resmi
+  live dan terverifikasi penuh.
+- **±21:46** — struktur bengkel → production diterapkan: layanan agen
+  kini berjalan dari `~/workspace/production/onebox-worker-door/`
+  (VERSION mencatat commit `dd42969`), bengkel kembali murni tempat
+  kerja.
+
+## 12. Yang belum selesai
+
+1. **Setup awal dashboard — SELESAI** (23 Okt 2026, oleh pemilik lewat
+   browser): database asli sudah melewati tahap setup;
+   `/api/auth/state` kini menjawab `login`, artinya kata sandi + TOTP
+   sudah terdaftar dan yang menghadap publik sekarang adalah halaman
+   login biasa.
+2. **Pintu final (T8)** — frp + VPS Oracle; skrip retry pembuatan
+   instance berjalan di laptop pemilik. Begitu instance ada, ikuti
+   bagian 10 untuk pensiunnya pintu ini.
+3. **Cermin GitHub untuk repo ini** — belum dibuat. Perannya hanya
+   arsip cadangan di luar VM (bukan jalur deploy); pembuatannya
+   menunggu instruksi pemilik.

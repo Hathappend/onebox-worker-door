@@ -5,7 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/hatch/workspace/projects/onebox-worker-door/agent
+# Layanan berjalan dari folder production, BUKAN repo bengkel.
+# Deploy ke sana: ~/workspace/ops/deploy-onebox-agent.sh
+WorkingDirectory=/home/hatch/workspace/production/onebox-worker-door/agent
 ExecStart=/usr/bin/node agent.js
 Restart=always
 RestartSec=5
