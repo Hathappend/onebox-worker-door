@@ -19,6 +19,13 @@ terbukti live, 23 Oktober 2026.
   lintas keluarnya wajib lewat proxy; Cloudflare Tunnel terbukti tidak
   bisa dari VM ini (T1). Worker + tunnel WebSocket buatan sendiri bisa,
   karena sambungannya dibuka dari dalam VM ke luar.
+- **Aturan perubahan (mengikat, keputusan pemilik 23 Okt 2026):**
+  pintu ini diperlakukan sebagai **production**. Semua perubahan
+  dikerjakan dan diuji **lokal dulu** (edit di proyek ini, uji dengan
+  hub tiruan, commit lokal). Menerapkan perubahan ke Worker yang live
+  — `wrangler deploy`, mengganti secret, mengubah route/DNS — hanya
+  dilakukan atas instruksi eksplisit pemilik, tidak pernah sebagai
+  bagian diam-diam dari pekerjaan lokal.
 
 ## 2. Arsitektur
 
